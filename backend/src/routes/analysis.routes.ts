@@ -23,7 +23,7 @@ export async function analysisRoutes(fastify: FastifyInstance) {
       fastify.log.info(`Starting analysis for repository: ${repo.name}`);
       
       // Trigger analysis in git-service
-      const response = await axios.post(`${gitServiceUrl}/analyze`, {
+      const response = await axios.post(`${gitServiceUrl}/api/analyze`, {
         repo_path: repo.path,
         repo_id: repoId
       }, {

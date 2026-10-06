@@ -67,3 +67,4 @@ test_repos/
 # Misc
 .cache/
 .temp/
+test-repo/
