@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - rat-network
+
+  backend:
+    build: ./backend
+    ports:
+      - "3000:3000"
+    environment:
+      - GIT_SERVICE_URL=http://git-service:5000
+      - PORT=3000
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      - git-service
+    networks:
+      - rat-network
+
+  git-service:
+    build: ./git-service
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - REPOS_DIR=/app/data/repos
+    networks:
+      - rat-network
+
+networks:
+  rat-network:
+    driver: bridge
+
+volumes:
+  data:
