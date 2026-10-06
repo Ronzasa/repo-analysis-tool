@@ -6,6 +6,7 @@ import { repoRoutes } from './routes/repo.routes';
 import { metricRoutes } from './routes/metric.routes';
 import { authorRoutes } from './routes/author.routes';
 import { analysisRoutes } from './routes/analysis.routes';
+import { uploadRoutes } from './routes/upload.routes';
 import { initDatabase, closeDatabase } from './database';
 
 const fastify = Fastify({
@@ -28,6 +29,7 @@ fastify.register(repoRoutes, { prefix: '/api/repos' });
 fastify.register(metricRoutes, { prefix: '/api/metrics' });
 fastify.register(authorRoutes, { prefix: '/api/authors' });
 fastify.register(analysisRoutes, { prefix: '/api' });
+fastify.register(uploadRoutes, { prefix: '/api/upload' });
 
 // Health check
 fastify.get('/health', async () => {
