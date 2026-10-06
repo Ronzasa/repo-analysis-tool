@@ -163,3 +163,18 @@ export function listActiveAuthors(): Author[] {
    */
   return getAllRows('SELECT * FROM authors WHERE merged_into IS NULL');
 }
+
+export function getAuthorsByRepo(repoId: string): Author[] {
+  /**
+   * Get all authors that have contributed to a specific repository
+   */
+  return getAllRows(
+    `SELECT DISTINCT a.* FROM authors a
+     LEFT JOIN file_metrics fm ON a.id = fm.author_id
+     LEFT JOIN directory_metrics dm ON a.id = dm.author_id
+     WHERE (fm.repo_id = ? OR dm.repo_id = ?)
+     AND a.merged_into IS NULL
+     ORDER BY a.name`,
+    [repoId, repoId]
+  );
+}

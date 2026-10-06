@@ -8,7 +8,8 @@ import {
   listMergedAuthors,
   listActiveAuthors,
   deleteAuthor,
-  getEffectiveAuthor
+  getEffectiveAuthor,
+  getAuthorsByRepo
 } from '../services/author.service';
 
 export async function authorRoutes(fastify: FastifyInstance) {
@@ -31,6 +32,19 @@ export async function authorRoutes(fastify: FastifyInstance) {
       request.log.error(error);
       reply.code(500);
       return { error: 'Failed to list authors', message: error.message };
+    }
+  });
+
+  // Get authors by repository
+  fastify.get('/repo/:repoId', async (request, reply) => {
+    try {
+      const { repoId } = request.params as { repoId: string };
+      const authors = getAuthorsByRepo(repoId);
+      return { authors, count: authors.length };
+    } catch (error: any) {
+      request.log.error(error);
+      reply.code(500);
+      return { error: 'Failed to get authors by repo', message: error.message };
     }
   });
 

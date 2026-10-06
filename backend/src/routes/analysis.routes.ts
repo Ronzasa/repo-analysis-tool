@@ -27,7 +27,7 @@ export async function analysisRoutes(fastify: FastifyInstance) {
         repo_path: repo.path,
         repo_id: repoId
       }, {
-        timeout: 300000 // 5 minute timeout for large repos
+        timeout: 900000 // 15 minute timeout for large repos (100k+ commits)
       });
       
       const { file_metrics, directory_metrics, authors } = response.data;

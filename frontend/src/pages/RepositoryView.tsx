@@ -41,14 +41,27 @@ function RepositoryView() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [repoResponse, metricsResponse, authorsResponse] = await Promise.all([
+      const [repoResult, metricsResult, authorsResult] = await Promise.allSettled([
         repoApi.get(id!),
         metricsApi.getByRepo(id!),
         authorsApi.getByRepo(id!)
       ]);
-      setRepo(repoResponse.data.repo);
-      setMetrics(metricsResponse.data.metrics);
-      setAuthors(authorsResponse.data.authors || []);
+      
+      if (repoResult.status === 'fulfilled') {
+        setRepo(repoResult.value.data.repo);
+      } else {
+        setError('Failed to load repository');
+        return;
+      }
+      
+      if (metricsResult.status === 'fulfilled') {
+        setMetrics(metricsResult.value.data.metrics);
+      }
+      
+      if (authorsResult.status === 'fulfilled') {
+        setAuthors(authorsResult.value.data.authors || []);
+      }
+      
       setError(null);
     } catch (err: any) {
       setError(err.message || 'Failed to load repository data');
