@@ -3,6 +3,7 @@ import cors from '@fastify/cors';
 import multipart from '@fastify/multipart';
 import { config } from './config';
 import { routes } from './routes';
+import { initDatabase, closeDatabase } from './database';
 
 const fastify = Fastify({
   logger: true,
@@ -30,6 +31,10 @@ fastify.get('/health', async () => {
 // Start server
 const start = async () => {
   try {
+    // Initialize database
+    await initDatabase();
+    console.log('Database initialized');
+
     await fastify.listen({ port: config.port, host: '0.0.0.0' });
     console.log(`Backend API running on port ${config.port}`);
   } catch (err) {
@@ -37,5 +42,13 @@ const start = async () => {
     process.exit(1);
   }
 };
+
+// Graceful shutdown
+process.on('SIGINT', async () => {
+  console.log('Shutting down gracefully...');
+  closeDatabase();
+  await fastify.close();
+  process.exit(0);
+});
 
 start();
