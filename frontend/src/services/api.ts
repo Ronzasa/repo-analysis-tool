@@ -38,6 +38,7 @@ export const metricsApi = {
 export const authorsApi = {
   list: (filter?: 'merged' | 'active') => 
     api.get('/api/authors', { params: filter ? { filter } : {} }),
+  getByRepo: (repoId: string) => api.get(`/api/authors/repo/${repoId}`),
   get: (id: string) => api.get(`/api/authors/${id}`),
   getByEmail: (email: string) => api.get(`/api/authors/email/${email}`),
   getEffective: (id: string) => api.get(`/api/authors/${id}/effective`),

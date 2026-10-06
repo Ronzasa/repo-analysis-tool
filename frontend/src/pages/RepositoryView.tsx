@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { repoApi, metricsApi, analysisApi } from '../services/api';
+import { repoApi, metricsApi, analysisApi, authorsApi } from '../services/api';
+import FileBrowser from '../components/FileBrowser';
+import AdvancedCharts from '../components/AdvancedCharts';
 
 interface Repository {
   id: string;
@@ -23,9 +25,12 @@ function RepositoryView() {
   const { id } = useParams<{ id: string }>();
   const [repo, setRepo] = useState<Repository | null>(null);
   const [metrics, setMetrics] = useState<Metric[]>([]);
+  const [authors, setAuthors] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<string | null>(null);
+  const [showAdvancedCharts, setShowAdvancedCharts] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -36,12 +41,14 @@ function RepositoryView() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [repoResponse, metricsResponse] = await Promise.all([
+      const [repoResponse, metricsResponse, authorsResponse] = await Promise.all([
         repoApi.get(id!),
-        metricsApi.getByRepo(id!)
+        metricsApi.getByRepo(id!),
+        authorsApi.getByRepo(id!)
       ]);
       setRepo(repoResponse.data.repo);
       setMetrics(metricsResponse.data.metrics);
+      setAuthors(authorsResponse.data.authors || []);
       setError(null);
     } catch (err: any) {
       setError(err.message || 'Failed to load repository data');
@@ -156,6 +163,60 @@ function RepositoryView() {
               </BarChart>
             </ResponsiveContainer>
           </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginTop: '2rem' }}>
+            <FileBrowser repoId={id!} onFileSelect={setSelectedFile} />
+            
+            <div className="card">
+              <h3>Selected File Details</h3>
+              {selectedFile ? (
+                <div style={{ marginTop: '1rem' }}>
+                  <p style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{selectedFile}</p>
+                  {(() => {
+                    const metric = metrics.find(m => (m.file_path || m.dir_path) === selectedFile);
+                    if (metric) {
+                      return (
+                        <div style={{ marginTop: '1rem', display: 'grid', gap: '0.5rem' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <span style={{ color: 'var(--text-muted)' }}>Lines Added:</span>
+                            <span className="positive">{metric.added_lines}</span>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <span style={{ color: 'var(--text-muted)' }}>Lines Removed:</span>
+                            <span className="negative">{metric.removed_lines}</span>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <span style={{ color: 'var(--text-muted)' }}>Growth:</span>
+                            <span>{metric.growth}</span>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <span style={{ color: 'var(--text-muted)' }}>Churn:</span>
+                            <span>{metric.churn}</span>
+                          </div>
+                        </div>
+                      );
+                    }
+                    return <p style={{ color: 'var(--text-muted)' }}>No metrics available for this file</p>;
+                  })()}
+                </div>
+              ) : (
+                <p style={{ color: 'var(--text-muted)', marginTop: '1rem' }}>
+                  Select a file from the browser to view its metrics
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div style={{ marginTop: '2rem', textAlign: 'center' }}>
+            <button
+              onClick={() => setShowAdvancedCharts(!showAdvancedCharts)}
+              className="btn btn-secondary"
+            >
+              {showAdvancedCharts ? 'Hide' : 'Show'} Advanced Charts
+            </button>
+          </div>
+
+          {showAdvancedCharts && <AdvancedCharts metrics={metrics} authors={authors} />}
 
           <div className="card">
             <h3>Metrics Details</h3>

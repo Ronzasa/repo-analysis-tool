@@ -86,6 +86,17 @@ export async function initDatabase(): Promise<SqlJsDatabase> {
   instance.run(`CREATE INDEX IF NOT EXISTS idx_file_metrics_commit ON file_metrics(commit_hash)`);
   instance.run(`CREATE INDEX IF NOT EXISTS idx_directory_metrics_repo ON directory_metrics(repo_id)`);
 
+  // Create cache table
+  instance.run(`
+    CREATE TABLE IF NOT EXISTS cache (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL,
+      created_at INTEGER NOT NULL,
+      expires_at INTEGER NOT NULL
+    )
+  `);
+  instance.run(`CREATE INDEX IF NOT EXISTS idx_cache_expires ON cache(expires_at)`);
+
   // Save database to file
   saveDatabase();
 
@@ -140,6 +151,9 @@ export function getAllRows(sql: string, params: any[] = []): any[] {
   stmt.free();
   return rows;
 }
+
+// Alias for getAllRows for consistency
+export const getQuery = getAllRows;
 
 export function getOneRow(sql: string, params: any[] = []): any | null {
   const db = getDatabase();

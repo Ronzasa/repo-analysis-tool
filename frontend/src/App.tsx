@@ -3,6 +3,7 @@ import Dashboard from './pages/Dashboard';
 import RepositoryView from './pages/RepositoryView';
 import UploadRepo from './pages/UploadRepo';
 import Authors from './pages/Authors';
+import AuthorMerge from './pages/AuthorMerge';
 
 function App() {
   return (
@@ -17,6 +18,9 @@ function App() {
             <Link to="/authors" style={{ color: 'white', marginRight: '20px', textDecoration: 'none' }}>
               Authors
             </Link>
+            <Link to="/merge" style={{ color: 'white', marginRight: '20px', textDecoration: 'none' }}>
+              Merge Authors
+            </Link>
             <Link to="/upload" style={{ color: 'white', textDecoration: 'none' }}>
               Upload Repository
             </Link>
@@ -30,6 +34,7 @@ function App() {
           <Route path="/upload" element={<UploadRepo />} />
           <Route path="/repo/:id" element={<RepositoryView />} />
           <Route path="/authors" element={<Authors />} />
+          <Route path="/merge" element={<AuthorMerge />} />
         </Routes>
       </div>
     </Router>
