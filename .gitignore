@@ -8,6 +8,8 @@ __pycache__/
 env/
 venv/
 ENV/
+# Build
+dist/
 build/
 develop-eggs/
 dist/
@@ -68,3 +70,4 @@ test_repos/
 .cache/
 .temp/
 test-repo/
+test-repos/

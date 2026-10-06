@@ -2,140 +2,149 @@
 
 A web-based dashboard for analyzing Git repositories and calculating comprehensive code metrics.
 
-## Overview
+**COMS3011A Test Submission - University of the Witwatersrand**
 
-This tool provides insights into Git repositories by calculating metrics for files, directories, authors, and commit sets. It helps understand:
-- How a repository has evolved over time
-- Who has contributed the most impact
-- Which parts of the codebase are most volatile
-
-## Architecture
-
-The application uses a hybrid architecture:
-
-- **Frontend**: React + TypeScript + Vite - Dashboard UI
-- **Backend API**: Node.js + Fastify - Handles web requests, file uploads, and serves the UI
-- **Git Processing Service**: Python + FastAPI + pygit2 - Performs intensive git operations and metric calculations
-- **Database**: SQLite - Stores repository metadata and computed metrics
-
-## Features
-
-- **Repository Upload**: Clone from URL or upload ZIP files
-- **Multiple Repository Support**: Manage and analyze multiple repositories
-- **Comprehensive Metrics**:
-  - File metrics (added/removed lines, growth, churn)
-  - Directory metrics (aggregated from immediate children)
-  - Repository metrics (whole repo overview)
-  - Commit set metrics (time-based analysis)
-  - Author metrics (contributions and ownership)
-- **Filtering**: Filter by repository, author, file/directory, and time period
-- **Author Merging**: Support for .mailmap and manual author merging
-
-## Getting Started
+## Quick Start
 
 ### Prerequisites
+- **Node.js 18+** (includes npm)
+- **Python 3.10+** (includes pip)
+- **Git**
 
-- Docker and Docker Compose
-- Node.js 20+ (for local development)
-- Python 3.11+ (for local development)
+### Running the Application
 
-### Quick Start with Docker
-
-1. Clone this repository
-2. Start the services:
-   ```bash
-   docker-compose up --build
-   ```
-3. Access the dashboard at `http://localhost`
-
-### Local Development
-
-#### Backend (Node.js)
+**Option 1: Using the start script (recommended)**
 ```bash
+chmod +x start.sh
+./start.sh
+```
+
+**Option 2: Manual start**
+```bash
+# Terminal 1 - Start Git Service (Python)
+cd git-service
+pip install -r requirements.txt
+python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+# Terminal 2 - Start Backend API (Node.js)
 cd backend
 npm install
 npm run dev
-```
 
-#### Git Service (Python)
-```bash
-cd git-service
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port 5000
-```
-
-#### Frontend (React)
-```bash
+# Terminal 3 - Start Frontend (React)
 cd frontend
 npm install
 npm run dev
 ```
 
-The frontend will be available at `http://localhost:5173`
+### Access the Application
+- **Frontend Dashboard**: http://localhost:5173
+- **Backend API**: http://localhost:3000
+- **Git Service**: http://localhost:8000
+
+## Architecture
+
+The application uses a hybrid microservices architecture:
+
+- **Frontend**: React + TypeScript + Vite - Dashboard UI
+- **Backend API**: Node.js + Fastify - Handles web requests and data storage
+- **Git Processing Service**: Python + FastAPI + pygit2 - Git operations and metric calculations
+- **Database**: SQLite - Stores repository metadata and computed metrics
+
+## Features
+
+### Core Metrics (All 5 Categories)
+- **File Metrics**: Added lines, removed lines, growth, churn per file
+- **Directory Metrics**: Aggregated metrics from immediate children
+- **Repository Metrics**: Whole repository overview
+- **Commit Set Metrics**: Time-based analysis with modification frequency
+- **Author Metrics**: Contributions, churn, and ownership percentage
+
+### Data Ingestion
+- Clone repositories from remote URLs (GitHub, GitLab, etc.)
+- Upload ZIP files for local repositories
+
+### Advanced Features
+- **Filtering**: Filter metrics by time period, author, file/directory, and commit hashes
+- **Author Merging**: Merge duplicate author identities via UI or .mailmap files
+- **Multi-Repository Support**: Manage and compare multiple repositories
+- **File Browser**: Interactive tree view of repository structure
+- **Advanced Visualizations**: Line charts (commits over time), bar charts (top contributors), pie charts (file type distribution)
+
+### Performance
+- **Metric Caching**: SQLite-backed cache with TTL to avoid redundant calculations
+- **Batch Processing**: Handles large repositories (60k+ commits) efficiently
+- **Progress Tracking**: Real-time progress updates for long-running operations
 
 ## API Endpoints
 
 ### Backend API (Port 3000)
 
-- `GET /health` - Health check
-- `POST /api/upload/zip` - Upload ZIP file
-- `POST /api/upload/clone` - Clone from URL
-- `GET /api/repos` - List repositories
-- `GET /api/repos/:id` - Get repository details
-- `DELETE /api/repos/:id` - Delete repository
-- `GET /api/metrics/repo/:id` - Get repository metrics
-- `GET /api/metrics/file/:repoId/:filePath` - Get file metrics
-- `GET /api/metrics/directory/:repoId/:dirPath` - Get directory metrics
-- `GET /api/metrics/author/:repoId/:author` - Get author metrics
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/health` | Health check |
+| GET | `/api/repos` | List all repositories |
+| GET | `/api/repos/:id` | Get repository details |
+| POST | `/api/repos` | Create a new repository |
+| DELETE | `/api/repos/:id` | Delete a repository |
+| GET | `/api/metrics/repo/:repoId` | Get all metrics for a repository |
+| GET | `/api/metrics/commit/:commitHash` | Get metrics for a commit |
+| GET | `/api/metrics/file` | Get file metrics (with filters) |
+| GET | `/api/metrics/directory` | Get directory metrics (with filters) |
+| GET | `/api/authors` | List all authors |
+| GET | `/api/authors/repo/:repoId` | Get authors for a repository |
+| POST | `/api/authors/merge` | Merge duplicate authors |
+| POST | `/api/analyze/:repoId` | Trigger full repository analysis |
 
-### Git Service API (Port 5000)
+### Git Service API (Port 8000)
 
-- `GET /health` - Health check
-- `POST /api/git/clone` - Clone repository
-- `GET /api/git/info/:repo_id` - Get repository info
-- `GET /api/metrics/file/:repo_id` - Calculate file metrics
-- `GET /api/metrics/directory/:repo_id` - Calculate directory metrics
-- `GET /api/metrics/repo/:repo_id` - Calculate repository metrics
-- `GET /api/metrics/author/:repo_id` - Calculate author metrics
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/health` | Health check |
+| POST | `/api/analyze` | Analyze repository (internal) |
 
-## Metrics
+## Running Tests
 
-### File Metrics
-- **Added Lines**: Number of lines added
-- **Removed Lines**: Number of lines removed
-- **Growth**: Net change (added - removed)
-- **Churn**: Total changes (added + removed)
+```bash
+# Backend tests (84 tests)
+cd backend
+npm test
 
-### Directory Metrics
-Aggregated metrics from all immediate children (files and subdirectories)
+# Frontend build check
+cd frontend
+npm run build
+```
 
-### Repository Metrics
-Same as directory metrics applied to the root
+## Project Structure
 
-### Commit Set Metrics
-- **Modifications**: Number of commits with changes
-- **Modification Frequency**: Modifications / Total commits
-- **Churn Rate**: Churn / Total commits
+```
+repo-analysis-tool/
+├── backend/                 # Node.js API server
+│   ├── src/
+│   │   ├── routes/         # API route handlers
+│   │   ├── services/       # Business logic (repo, author, metric, cache, batch, progress)
+│   │   ├── database.ts     # SQLite database setup
+│   │   └── server.ts       # Fastify server entry point
+│   └── tests/              # Jest test files
+├── frontend/                # React dashboard
+│   ├── src/
+│   │   ├── pages/          # Page components (Dashboard, RepositoryView, Authors, AuthorMerge, UploadRepo)
+│   │   ├── components/     # Reusable components (FileBrowser, AdvancedCharts)
+│   │   └── services/       # API client
+├── git-service/             # Python git processing service
+│   └── app/
+│       ├── api/            # FastAPI endpoints
+│       └── core/           # Git operations and metric calculations
+├── start.sh                 # Quick start script
+└── README.md                # This file
+```
 
-### Author Metrics
-- **Author Modifications**: Commits by author with changes
-- **Author Churn**: Total churn by author
-- **Author Ownership**: Fraction of total churn attributed to author
+## Technology Stack
 
-## Configuration
-
-Environment variables can be set in `.env` files:
-
-### Backend
-- `PORT`: Backend API port (default: 3000)
-- `GIT_SERVICE_URL`: Git service URL (default: http://localhost:5000)
-
-### Git Service
-- `REPOS_DIR`: Directory for storing repositories (default: ./repos)
-
-## Development Status
-
-This project is under active development. Core features are being implemented to meet the COMS3011A test requirements.
+- **Frontend**: React 18, TypeScript, Vite, Recharts, Axios, React Router
+- **Backend**: Node.js, Fastify, TypeScript, sql.js (SQLite), Jest, Supertest
+- **Git Service**: Python 3, FastAPI, pygit2 (libgit2 C bindings)
+- **Database**: SQLite (via sql.js)
 
 ## License
 
