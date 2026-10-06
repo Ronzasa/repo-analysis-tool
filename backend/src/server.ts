@@ -2,7 +2,10 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import multipart from '@fastify/multipart';
 import { config } from './config';
-import { routes } from './routes';
+import { repoRoutes } from './routes/repo.routes';
+import { metricRoutes } from './routes/metric.routes';
+import { authorRoutes } from './routes/author.routes';
+import { analysisRoutes } from './routes/analysis.routes';
 import { initDatabase, closeDatabase } from './database';
 
 const fastify = Fastify({
@@ -21,11 +24,28 @@ fastify.register(multipart, {
 });
 
 // Register routes
-fastify.register(routes);
+fastify.register(repoRoutes, { prefix: '/api/repos' });
+fastify.register(metricRoutes, { prefix: '/api/metrics' });
+fastify.register(authorRoutes, { prefix: '/api/authors' });
+fastify.register(analysisRoutes, { prefix: '/api' });
 
 // Health check
 fastify.get('/health', async () => {
   return { status: 'healthy', timestamp: new Date().toISOString() };
+});
+
+// API info
+fastify.get('/', async () => {
+  return {
+    name: 'Repository Analysis Tool API',
+    version: '1.0.0',
+    endpoints: {
+      repositories: '/api/repos',
+      metrics: '/api/metrics',
+      authors: '/api/authors',
+      analysis: '/api/analyze/:repoId'
+    }
+  };
 });
 
 // Start server

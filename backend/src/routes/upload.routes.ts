@@ -1,5 +1,4 @@
 import { FastifyInstance, FastifyRequest } from 'fastify';
-import { Database } from '../database';
 
 export async function uploadRoutes(fastify: FastifyInstance) {
   // Upload zip file
